@@ -46,6 +46,17 @@ class ClassAbilities(AdventureMixin):
             return await smart_embed(ctx, _("This command is not available in DM's on this bot."))
 
         classes = {
+            "Thaumaturge":{
+                "name": _("Thaumaturge"),
+                "ability": False,
+                "desc": _(
+                    "Thaumaturges are, to many, Miracle workers, as they can replicate acts "
+                    "thought impossible by most.\n"
+                    "Use the miracle command when attacking to direct intefere with a Monster's "
+                    "defenses."
+                ),
+                "cooldown": time.time(),
+            },
             "Wizard": {
                 "name": _("Wizard"),
                 "ability": False,
@@ -88,7 +99,9 @@ class ClassAbilities(AdventureMixin):
                 "ability": False,
                 "desc": _(
                     "Rangers can gain a special pet, which can find items and give "
-                    "reward bonuses.\nUse the pet command to see pet options."
+                    "reward bonuses. Their pets can also join in on the attacks!\n"
+                    "Use the pet command to see pet options, or use the sic command "
+                    "to allow your pets to attack the target."
                 ),
                 "pet": {},
                 "cooldown": time.time(),
@@ -98,8 +111,10 @@ class ClassAbilities(AdventureMixin):
                 "name": _("Bard"),
                 "ability": False,
                 "desc": _(
-                    "Bards can perform to aid their comrades in diplomacy.\n"
-                    "Use the music command when being diplomatic in an adventure."
+                    "Bards can perform to aid their comrades in diplomacy, or use their proficiency "
+                    "in reading to perform spells in an emergency.\n"
+                    "Using the music command will allow you to add a bonus to your diplomacy or intelligence, "
+                    "depending on which you opt to engage with."
                 ),
                 "cooldown": time.time(),
             },
@@ -156,6 +171,9 @@ class ClassAbilities(AdventureMixin):
                     if clz == "Psychic" and c.rebirths < 20:
                         ctx.command.reset_cooldown(ctx)
                         return await smart_embed(ctx, _("You are too inexperienced to become a {}.").format(clz))
+                    if clz == "Thaumaturge" and c.rebirths < 1000:
+                        ctx.command.reset_cooldown(ctx)
+                        return await smart_embed(ctx, _("Thaumaturgy is an art that cannot be mastered just yet. Travel on, dear friend - for that shall change. One Day.").format(clz))
                     class_msg = await ctx.send(
                         box(
                             _("This will cost {spend} {currency_name}. Do you want to continue, {author}?").format(
@@ -513,7 +531,7 @@ class ClassAbilities(AdventureMixin):
                     _("**{author}**, Your backpack is currently full.").format(author=escape(ctx.author.display_name))
                 )
                 return
-            cooldown_time = max(1800, (7200 - max((c.luck + c.total_int) * 2, 0)))
+            cooldown_time = max(600, (3600 - max((c.luck + c.total_att + c.total_cha) * 2, 0)))
             if "cooldown" not in c.heroclass:
                 c.heroclass["cooldown"] = cooldown_time + 1
             if c.heroclass["cooldown"] <= time.time():
@@ -529,7 +547,7 @@ class ClassAbilities(AdventureMixin):
                     ),
                 )
 
-    @pet.command(name="free")
+    @pet.command(name="free") 
     async def _free(self, ctx: commands.Context):
         """Free your pet :cry:"""
         if self.in_adventure(ctx):
@@ -891,7 +909,7 @@ class ClassAbilities(AdventureMixin):
     async def music(self, ctx: commands.Context):
         """[Bard Class Only]
 
-        This allows a Bard to add substantial diplomacy bonuses for one battle.
+        This allows a Bard to add substantial diplomacy or magic bonuses for one battle.
         """
         async with self.get_lock(ctx.author):
             try:
@@ -920,7 +938,7 @@ class ClassAbilities(AdventureMixin):
                     await self.config.user(ctx.author).set(await c.to_json(ctx, self.config))
                     await smart_embed(
                         ctx,
-                        _("{skill} **{c}** is whipping up a performance... {skill}").format(
+                        _("{skill} **{c}** is preparing a song - but is it to lull the monster into submission, or to rain down hell? {skill}").format(
                             c=escape(ctx.author.display_name), skill=self.emojis.skills.bard
                         ),
                     )
@@ -936,7 +954,7 @@ class ClassAbilities(AdventureMixin):
                             humanize_timedelta(seconds=int(cooldown_time)) if int(cooldown_time) >= 1 else _("1 second")
                         ),
                     )
-
+    
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @commands.command()
     @commands.bot_has_permissions(add_reactions=True)

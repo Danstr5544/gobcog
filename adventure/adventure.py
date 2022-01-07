@@ -1870,11 +1870,23 @@ class Adventure(
                         f"{self.emojis.berserk}{humanize_number(bonus)} + "
                         f"{self.emojis.attack}{str(humanize_number(att_value))}\n"
                     )
+                # if c.heroclass["name"] == "Ranger" and c.heroclass["ability"]:
+                #     bonus_roll = random.randint(5, 15)
+                #     bonus_multi = random.choice([0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
+                #     bonus = max(bonus_roll, int((roll + ((att_value + c.total_cha) // 2) + rebirths) * bonus_multi))
+                #     attack += int(((roll - bonus + ((att_value + c.total_cha) // 2)) / pdef) * pet_power)
+                #     report += (
+                #         f"**{escape(user.display_name)}**: "
+                #         f"{self.emojis.dice}({roll}) + "
+                #         f"{self.emojis.berserk}{humanize_number(bonus)} + "
+                #         f"{self.emojis.attack}{str(humanize_number(att_value))}\n"
+                #     )    
                 else:
                     msg += _("**{}** fumbled the attack.\n").format(escape(user.display_name))
                     fumblelist.append(user)
                     fumble_count += 1
-            elif roll_perc > 0.95 or c.heroclass["name"] == "Berserker":
+
+            elif roll_perc > 0.95 or c.heroclass["name"] == "Berserker" or c.heroclass["name"] == "Ranger":
                 crit_str = ""
                 crit_bonus = 0
                 base_bonus = random.randint(5, 10) + rebirths
@@ -1885,6 +1897,8 @@ class Adventure(
                     crit_str = f"{self.emojis.crit} {humanize_number(crit_bonus)}"
                 if c.heroclass["name"] == "Berserker" and c.heroclass["ability"]:
                     base_bonus = (random.randint(1, 10) + 5) * (rebirths // 2)
+                if c.heroclass["name"] == "Ranger" and c.heroclass["ability"]:
+                    base_bonus = ((random.randint(1, 10) + 5) * (rebirths // 2))
                 base_str = f"{self.emojis.crit}️ {humanize_number(base_bonus)}"
                 attack += int((roll + base_bonus + crit_bonus + att_value) / pdef)
                 bonus = base_str + crit_str
@@ -1947,7 +1961,18 @@ class Adventure(
                         f"{self.emojis.magic_crit}{humanize_number(bonus)} + "
                         f"{self.emojis.magic}{str(humanize_number(int_value))}\n"
                     )
-            elif roll_perc > 0.95 or (c.heroclass["name"] == "Wizard"):
+                if c.heroclass["name"] == "Bard" and c.heroclass["ability"]:
+                    bonus_roll = random.randint(5, 15)
+                    bonus_multi = random.choice([0.2, 0.4, 0.6, 0.8])
+                    bonus = max(bonus_roll, int(roll + max(int_value // 2, c.total_cha // 3) * bonus_multi))
+                    magic += int((roll - bonus + ((int_value + c.total_cha) / 2)) / mdef)
+                    report += (
+                        f"**{escape(user.display_name)}**: "
+                        f"{self.emojis.dice}({roll}) + "
+                        f"{self.emojis.magic_crit}{humanize_number(bonus)} + "
+                        f"{self.emojis.magic}{str(humanize_number(int_value))}\n"
+                    )
+            elif roll_perc > 0.95 or c.heroclass["name"] == "Wizard" or c.heroclass["name"] == "Bard":
                 crit_str = ""
                 crit_bonus = 0
                 base_bonus = random.randint(5, 10) + rebirths
@@ -1958,6 +1983,9 @@ class Adventure(
                     crit_bonus = (random.randint(5, 20)) + (rebirths * 2)
                     crit_str = f"{self.emojis.crit} {humanize_number(crit_bonus)}"
                 if c.heroclass["name"] == "Wizard" and c.heroclass["ability"]:
+                    base_bonus = (random.randint(1, 10) + 5) * (rebirths // 2)
+                    base_str = f"{self.emojis.magic_crit}️ {humanize_number(base_bonus)}"
+                if c.heroclass["name"] == "Bard" and c.heroclass["ability"]:
                     base_bonus = (random.randint(1, 10) + 5) * (rebirths // 2)
                     base_str = f"{self.emojis.magic_crit}️ {humanize_number(base_bonus)}"
                 magic += int((roll + base_bonus + crit_bonus + int_value) / mdef)
