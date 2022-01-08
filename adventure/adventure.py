@@ -93,7 +93,7 @@ class Adventure(
             user_id
         ).clear()  # This will only ever touch the separate currency, leaving bot economy to be handled by core.
 
-    __version__ = "3.5.0"
+    __version__ = "3.5.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -2462,6 +2462,7 @@ class Adventure(
                 except KeyError:
                     self._last_trade[message.guild.id] = 0
                 ctx = await self.bot.get_context(message)
+                ctx.command = self.makecart
                 await asyncio.sleep(5)
                 await self._trader(ctx)
 
